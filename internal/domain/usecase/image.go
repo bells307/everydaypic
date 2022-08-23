@@ -8,7 +8,8 @@ import (
 )
 
 type ImageUsecase interface {
-	CreateImage(ctx context.Context, name, filename string, data []byte) (entity.Image, error)
+	UploadImage(ctx context.Context, name string, data []byte) (entity.Image, error)
+	DeleteImage(ctx context.Context, id string) error
 }
 
 type imageUsecase struct {
@@ -19,6 +20,11 @@ func NewImageUsecase(imageService service.ImageService) *imageUsecase {
 	return &imageUsecase{imageService: imageService}
 }
 
-func (u *imageUsecase) CreateImage(ctx context.Context, name, filename string, data []byte) (entity.Image, error) {
+func (u *imageUsecase) UploadImage(ctx context.Context, name string, data []byte) (entity.Image, error) {
+	filename := "img"
 	return u.imageService.CreateImage(ctx, name, filename, data)
+}
+
+func (u *imageUsecase) DeleteImage(ctx context.Context, id string) error {
+	return u.imageService.DeleteImage(ctx, id)
 }

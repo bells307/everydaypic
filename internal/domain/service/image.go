@@ -8,10 +8,12 @@ import (
 
 type ImageStorage interface {
 	CreateImage(ctx context.Context, name, filename string, data []byte) (entity.Image, error)
+	DeleteImage(ctx context.Context, id string) error
 }
 
 type ImageService interface {
 	CreateImage(ctx context.Context, name, filename string, data []byte) (entity.Image, error)
+	DeleteImage(ctx context.Context, id string) error
 }
 
 type imageService struct {
@@ -24,4 +26,8 @@ func NewImageService(storage ImageStorage) *imageService {
 
 func (s *imageService) CreateImage(ctx context.Context, name, filename string, data []byte) (entity.Image, error) {
 	return s.storage.CreateImage(ctx, name, filename, data)
+}
+
+func (s *imageService) DeleteImage(ctx context.Context, id string) error {
+	return s.storage.DeleteImage(ctx, id)
 }

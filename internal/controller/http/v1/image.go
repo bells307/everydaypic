@@ -20,13 +20,22 @@ func (h *imageHandler) Register(e *gin.Engine) {
 	{
 		// images.GET("/")
 		images.POST("/", h.createImage)
+		images.DELETE("/:id", h.deleteImage)
 	}
 }
 
 func (h *imageHandler) createImage(c *gin.Context) {
 	var data []byte
-	_, err := h.imageUsecase.CreateImage(c.Request.Context(), "img1", "img.jpg", data)
+	_, err := h.imageUsecase.UploadImage(c.Request.Context(), "img1", data)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, "")
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err)
+	}
+}
+
+func (h *imageHandler) deleteImage(c *gin.Context) {
+	id := c.Param("id")
+	err := h.imageUsecase.DeleteImage(c.Request.Context(), id)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err)
 	}
 }
