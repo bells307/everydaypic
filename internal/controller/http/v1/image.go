@@ -1,10 +1,14 @@
 package v1
 
 import (
+	"fmt"
+	"io"
 	"net/http"
 
+	"github.com/bells307/everydaypic/internal/domain/entity"
 	"github.com/bells307/everydaypic/internal/domain/usecase"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type imageHandler struct {
@@ -16,20 +20,37 @@ func NewImageHandler(imageUsecase usecase.ImageUsecase) *imageHandler {
 }
 
 func (h *imageHandler) Register(e *gin.Engine) {
-	images := e.Group("/images")
+	images := e.Group("/image")
 	{
 		// images.GET("/")
-		images.POST("/", h.createImage)
+		images.POST("/:name", h.createImage)
 		images.DELETE("/:id", h.deleteImage)
 	}
 }
 
 func (h *imageHandler) createImage(c *gin.Context) {
-	var data []byte
-	_, err := h.imageUsecase.UploadImage(c.Request.Context(), "img1", data)
+	data, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, err)
 	}
+
+	uuid, err := uuid.NewRandom()
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err)
+	}
+
+	img := entity.Image{
+		ID:       uuid.String(),
+		Name:     c.Param("name"),
+		FileName: fmt.Sprintf("%s.jpg", uuid.String()),
+	}
+
+	err = h.imageUsecase.UploadImage(c.Request.Context(), img, data)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err)
+	}
+
+	c.JSON(200, uuid)
 }
 
 func (h *imageHandler) deleteImage(c *gin.Context) {

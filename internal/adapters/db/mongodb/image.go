@@ -13,12 +13,13 @@ type imageStorage struct {
 }
 
 func NewImageStorage(db *mongodb.MongoDB) *imageStorage {
-	return &imageStorage{db: db}
+	return &imageStorage{db}
 }
 
-func (s *imageStorage) CreateImage(ctx context.Context, name, filename string, data []byte) (entity.Image, error) {
+func (s *imageStorage) CreateImage(ctx context.Context, img entity.Image, data []byte) error {
 	log.Println("creating image in mongo ...")
-	return entity.Image{}, nil
+	s.db.UploadFile(img.FileName, data)
+	return nil
 }
 
 func (s *imageStorage) DeleteImage(ctx context.Context, id string) error {
