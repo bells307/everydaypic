@@ -58,6 +58,7 @@ func (h *imageHandler) createImage(c *gin.Context) {
 	data, err = io.ReadAll(src)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, err)
+		return
 	}
 
 	dto := dto.CreateImage{
@@ -69,6 +70,7 @@ func (h *imageHandler) createImage(c *gin.Context) {
 	id, err := h.imageUsecase.CreateImage(c.Request.Context(), dto)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, err)
+		return
 	}
 
 	c.JSON(http.StatusOK, map[string]string{"id": id})
@@ -79,6 +81,7 @@ func (h *imageHandler) deleteImage(c *gin.Context) {
 	err := h.imageUsecase.DeleteImage(c.Request.Context(), id)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, err)
+		return
 	}
 }
 
@@ -90,8 +93,10 @@ func (h *imageHandler) downloadImage(c *gin.Context) {
 		switch {
 		case errors.Is(err, usecase.ErrNotFound):
 			c.AbortWithStatusJSON(http.StatusNotFound, err)
+			return
 		default:
 			c.AbortWithStatusJSON(http.StatusInternalServerError, err)
+			return
 		}
 	}
 	c.Data(http.StatusOK, "application/octet-stream", data)
