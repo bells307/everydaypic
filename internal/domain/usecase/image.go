@@ -2,28 +2,35 @@ package usecase
 
 import (
 	"context"
+	"errors"
 
-	"github.com/bells307/everydaypic/internal/domain/entity"
-	"github.com/bells307/everydaypic/internal/domain/service"
+	"github.com/bells307/everydaypic/internal/domain/dto"
 )
 
-type ImageUsecase interface {
-	UploadImage(ctx context.Context, img entity.Image, data []byte) error
+var ErrNotFound = errors.New("file not found")
+
+type ImageService interface {
+	CreateImage(ctx context.Context, dto dto.CreateImage) (string, error)
 	DeleteImage(ctx context.Context, id string) error
+	DownloadImage(ctx context.Context, id string) ([]byte, error)
 }
 
 type imageUsecase struct {
-	imageService service.ImageService
+	imageService ImageService
 }
 
-func NewImageUsecase(imageService service.ImageService) *imageUsecase {
-	return &imageUsecase{imageService: imageService}
+func NewImageUsecase(imageService ImageService) *imageUsecase {
+	return &imageUsecase{imageService}
 }
 
-func (u *imageUsecase) UploadImage(ctx context.Context, img entity.Image, data []byte) error {
-	return u.imageService.CreateImage(ctx, img, data)
+func (u *imageUsecase) CreateImage(ctx context.Context, dto dto.CreateImage) (string, error) {
+	return u.imageService.CreateImage(ctx, dto)
 }
 
 func (u *imageUsecase) DeleteImage(ctx context.Context, id string) error {
 	return u.imageService.DeleteImage(ctx, id)
+}
+
+func (u *imageUsecase) DownloadImage(ctx context.Context, id string) ([]byte, error) {
+	return u.imageService.DownloadImage(ctx, id)
 }
