@@ -6,8 +6,10 @@ import (
 	"log"
 
 	"github.com/bells307/everydaypic/internal/domain/dto"
+	"github.com/bells307/everydaypic/internal/domain/entity"
 	"github.com/bells307/everydaypic/internal/domain/usecase"
 	"github.com/bells307/everydaypic/pkg/mongodb"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -18,6 +20,35 @@ type imageStorage struct {
 
 func NewImageStorage(db *mongodb.MongoDB) *imageStorage {
 	return &imageStorage{db}
+}
+
+func (s *imageStorage) GetImages(ctx context.Context, dto dto.GetImages) ([]entity.Image, error) {
+	filter := bson.M{}
+
+	// ---
+	// var purpose string
+	// var startDate, endDate time.Time
+
+	// filter := bson.M{}
+	// if purpose != "" {
+	// 	filter["purpose"] = purpose
+	// }
+	// if !startDate.IsZero() && !endDate.IsZero() {
+	// 	filter["paymentDate"] = bson.M{
+	// 		"$gte": startDate,
+	// 		"$lt":  endDate,
+	// 	}
+	// }
+	// ---
+	// db.feed.find({
+	// 	_id: {
+	// 		$in: [ObjectId("55880c251df42d0466919268"), ObjectId("55bf528e69b70ae79be35006")]
+	// 	}
+	// });
+	// ---
+
+	cursor, err = collection.Find(ctx, filter)
+	res, err := s.db.Find(ctx, "images", dto)
 }
 
 func (s *imageStorage) CreateImage(ctx context.Context, dto dto.CreateImage) (string, error) {

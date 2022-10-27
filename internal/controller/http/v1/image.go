@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/bells307/everydaypic/internal/domain/dto"
+	"github.com/bells307/everydaypic/internal/domain/entity"
 	"github.com/bells307/everydaypic/internal/domain/usecase"
 	"github.com/gin-gonic/gin"
 )
@@ -16,6 +17,7 @@ type imageHandler struct {
 }
 
 type ImageUsecase interface {
+	GetImages(ctx context.Context, dto dto.GetImages) ([]entity.Image, error)
 	CreateImage(ctx context.Context, dto dto.CreateImage) (string, error)
 	DeleteImage(ctx context.Context, id string) error
 	DownloadImage(ctx context.Context, id string) ([]byte, error)
@@ -30,12 +32,34 @@ func (h *imageHandler) Register(e *gin.Engine) {
 	{
 		images := v1.Group("/image")
 		{
+			images.GET("", h.getImages)
 			images.GET("/:id/download", h.downloadImage)
-			images.POST("/", h.createImage)
+			images.POST("", h.createImage)
 			images.DELETE("/:id", h.deleteImage)
 		}
 	}
 
+}
+
+func (h *imageHandler) getImages(c *gin.Context) {
+	var getImages dto.GetImages
+
+	if err := c.Bind(&getImages); err != nil {
+		return
+	}
+
+	imgs, err := h.imageUsecase.GetImages(c.Request.Context(), getImages)
+	if err != nil {
+		switch {
+		case errors.Is(err, usecase.ErrNotFound):
+			c.AbortWithStatusJSON(http.StatusNotFound, err)
+			return
+		default:
+			c.AbortWithStatusJSON(http.StatusInternalServerError, err)
+			return
+		}
+	}
+	c.JSON(http.StatusOK, imgs)
 }
 
 func (h *imageHandler) createImage(c *gin.Context) {

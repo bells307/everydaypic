@@ -38,6 +38,11 @@ func NewMongoDB(cfg MongoDBConfig) (*MongoDB, error) {
 	}, nil
 }
 
+func (m *MongoDB) Find(ctx context.Context, collection string, filter any) (*mongo.Cursor, error) {
+	col := m.db.Collection(collection)
+	return col.Find(ctx, filter)
+}
+
 func (m *MongoDB) InsertOne(ctx context.Context, collection string, obj any) (oid primitive.ObjectID, err error) {
 	res, err := m.db.Collection(collection).InsertOne(ctx, obj)
 	oid = res.InsertedID.(primitive.ObjectID)
