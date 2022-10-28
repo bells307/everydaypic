@@ -6,6 +6,7 @@ import (
 	"github.com/bells307/everydaypic/internal/domain/service"
 	"github.com/bells307/everydaypic/internal/domain/usecase"
 	mongodriver "github.com/bells307/everydaypic/pkg/mongodb"
+	"github.com/bells307/everydaypic/pkg/mongodb/middleware"
 	"github.com/gin-gonic/gin"
 )
 
@@ -26,6 +27,7 @@ func main() {
 	imageHandler := v1.NewImageHandler(imageUsecase)
 
 	router := gin.Default()
+	router.Use(middleware.ErrorHandler)
 	imageHandler.Register(router)
 
 	router.Run("localhost:8080")

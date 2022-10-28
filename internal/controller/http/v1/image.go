@@ -3,6 +3,7 @@ package v1
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -52,10 +53,11 @@ func (h *imageHandler) getImages(c *gin.Context) {
 	if err != nil {
 		switch {
 		case errors.Is(err, usecase.ErrNotFound):
-			c.AbortWithStatusJSON(http.StatusNotFound, err)
+			c.AbortWithStatus(http.StatusNotFound)
 			return
 		default:
-			c.AbortWithStatusJSON(http.StatusInternalServerError, err)
+			fmt.Printf("err: %v\n", err)
+			c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}
 	}
@@ -66,14 +68,14 @@ func (h *imageHandler) createImage(c *gin.Context) {
 	var createImage CreateImage
 
 	if err := c.ShouldBind(&createImage); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, err)
+		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 
 	file := createImage.File
 	src, err := file.Open()
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, err)
+		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 	defer src.Close()
@@ -81,7 +83,7 @@ func (h *imageHandler) createImage(c *gin.Context) {
 	var data []byte
 	data, err = io.ReadAll(src)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, err)
+		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
@@ -93,7 +95,7 @@ func (h *imageHandler) createImage(c *gin.Context) {
 
 	id, err := h.imageUsecase.CreateImage(c.Request.Context(), dto)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, err)
+		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
@@ -104,7 +106,7 @@ func (h *imageHandler) deleteImage(c *gin.Context) {
 	id := c.Param("id")
 	err := h.imageUsecase.DeleteImage(c.Request.Context(), id)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, err)
+		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 }
@@ -116,10 +118,10 @@ func (h *imageHandler) downloadImage(c *gin.Context) {
 	if err != nil {
 		switch {
 		case errors.Is(err, usecase.ErrNotFound):
-			c.AbortWithStatusJSON(http.StatusNotFound, err)
+			c.AbortWithStatus(http.StatusNotFound)
 			return
 		default:
-			c.AbortWithStatusJSON(http.StatusInternalServerError, err)
+			c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}
 	}

@@ -25,30 +25,49 @@ func NewImageStorage(db *mongodb.MongoDB) *imageStorage {
 func (s *imageStorage) GetImages(ctx context.Context, dto dto.GetImages) ([]entity.Image, error) {
 	filter := bson.M{}
 
-	// ---
-	// var purpose string
-	// var startDate, endDate time.Time
+	// Формируем фильтр по ID
+	ids := dto.ID
+	oids := bson.A{}
+	for i := range ids {
+		oid, err := primitive.ObjectIDFromHex(ids[i])
+		if err != nil {
+			return []entity.Image{}, fmt.Errorf("can't convert %s to ObjectID: %v", ids[i], err)
+		} else {
+			oids = append(oids, oid)
+		}
+	}
 
-	// filter := bson.M{}
-	// if purpose != "" {
-	// 	filter["purpose"] = purpose
-	// }
-	// if !startDate.IsZero() && !endDate.IsZero() {
-	// 	filter["paymentDate"] = bson.M{
-	// 		"$gte": startDate,
-	// 		"$lt":  endDate,
-	// 	}
-	// }
-	// ---
-	// db.feed.find({
-	// 	_id: {
-	// 		$in: [ObjectId("55880c251df42d0466919268"), ObjectId("55bf528e69b70ae79be35006")]
-	// 	}
-	// });
-	// ---
+	if len(oids) > 0 {
+		filter["_id"] = bson.M{"$in": oids}
+	}
 
-	cursor, err = collection.Find(ctx, filter)
-	res, err := s.db.Find(ctx, "images", dto)
+	// Формируем фильтр по именам файлов
+	fileNames := bson.A{}
+	for i := range dto.FileName {
+		fileNames = append(fileNames, dto.FileName[i])
+	}
+
+	if len(fileNames) > 0 {
+		filter["filename"] = bson.M{"$in": fileNames}
+	}
+
+	// TODO: убрать хардкод ...
+	cur, err := s.db.Find(ctx, "fs.files", filter)
+	if err != nil {
+		return []entity.Image{}, fmt.Errorf("can't find image: %v", err)
+	}
+	defer cur.Close(ctx)
+
+	var imgs []entity.Image
+	if err := cur.All(ctx, &imgs); err != nil {
+		return []entity.Image{}, fmt.Errorf("error decoding mongodb cursor: %v", err)
+	}
+
+	if len(imgs) == 0 {
+		return []entity.Image{}, usecase.ErrNotFound
+	}
+
+	return imgs, nil
 }
 
 func (s *imageStorage) CreateImage(ctx context.Context, dto dto.CreateImage) (string, error) {
