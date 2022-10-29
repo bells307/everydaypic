@@ -19,7 +19,7 @@ type imageHandler struct {
 
 type ImageUsecase interface {
 	GetImages(ctx context.Context, dto dto.GetImages) ([]entity.Image, error)
-	CreateImage(ctx context.Context, dto dto.CreateImage) (string, error)
+	CreateImage(ctx context.Context, dto dto.CreateImage) (entity.Image, error)
 	DeleteImage(ctx context.Context, id string) error
 	DownloadImage(ctx context.Context, id string) ([]byte, error)
 }
@@ -42,6 +42,9 @@ func (h *imageHandler) Register(e *gin.Engine) {
 
 }
 
+// @Summary Получить информацию об изображениях
+// @Description Получить информацию об изображениях
+// @ID get-images
 func (h *imageHandler) getImages(c *gin.Context) {
 	var getImages dto.GetImages
 
@@ -93,13 +96,13 @@ func (h *imageHandler) createImage(c *gin.Context) {
 		Data:     data,
 	}
 
-	id, err := h.imageUsecase.CreateImage(c.Request.Context(), dto)
+	img, err := h.imageUsecase.CreateImage(c.Request.Context(), dto)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, map[string]string{"id": id})
+	c.JSON(http.StatusOK, img)
 }
 
 func (h *imageHandler) deleteImage(c *gin.Context) {

@@ -70,15 +70,23 @@ func (s *imageStorage) GetImages(ctx context.Context, dto dto.GetImages) ([]enti
 	return imgs, nil
 }
 
-func (s *imageStorage) CreateImage(ctx context.Context, dto dto.CreateImage) (string, error) {
+func (s *imageStorage) CreateImage(ctx context.Context, dto dto.CreateImage) (entity.Image, error) {
 	log.Println("creating image in mongo ...")
 
-	meta := map[string]any{"name": dto.Name}
+	meta := map[string]any{
+		"name": dto.Name,
+	}
+
 	oid, err := s.db.UploadFile(dto.FileName, meta, dto.Data)
 	if err != nil {
-		return "", fmt.Errorf("error uploading image to mongo bucket: %v", err)
+		return entity.Image{}, fmt.Errorf("error uploading image to mongo bucket: %v", err)
 	}
-	return oid.Hex(), nil
+	img := entity.Image{
+		ID:       oid.Hex(),
+		Filename: dto.FileName,
+		Metadata: meta,
+	}
+	return img, nil
 }
 
 func (s *imageStorage) DeleteImage(ctx context.Context, id string) error {

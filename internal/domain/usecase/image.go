@@ -12,7 +12,7 @@ var ErrNotFound = errors.New("file not found")
 
 type ImageService interface {
 	GetImages(ctx context.Context, dto dto.GetImages) ([]entity.Image, error)
-	CreateImage(ctx context.Context, dto dto.CreateImage) (string, error)
+	CreateImage(ctx context.Context, dto dto.CreateImage) (entity.Image, error)
 	DeleteImage(ctx context.Context, id string) error
 	DownloadImage(ctx context.Context, id string) ([]byte, error)
 }
@@ -29,7 +29,7 @@ func (u *imageUsecase) GetImages(ctx context.Context, dto dto.GetImages) ([]enti
 	return u.imageService.GetImages(ctx, dto)
 }
 
-func (u *imageUsecase) CreateImage(ctx context.Context, dto dto.CreateImage) (string, error) {
+func (u *imageUsecase) CreateImage(ctx context.Context, dto dto.CreateImage) (entity.Image, error) {
 	return u.imageService.CreateImage(ctx, dto)
 }
 

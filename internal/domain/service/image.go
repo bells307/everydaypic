@@ -9,7 +9,7 @@ import (
 
 type ImageStorage interface {
 	GetImages(ctx context.Context, dto dto.GetImages) ([]entity.Image, error)
-	CreateImage(ctx context.Context, dto dto.CreateImage) (string, error)
+	CreateImage(ctx context.Context, dto dto.CreateImage) (entity.Image, error)
 	DeleteImage(ctx context.Context, id string) error
 	DownloadImage(ctx context.Context, id string) ([]byte, error)
 }
@@ -26,7 +26,7 @@ func (s *imageService) GetImages(ctx context.Context, dto dto.GetImages) ([]enti
 	return s.storage.GetImages(ctx, dto)
 }
 
-func (s *imageService) CreateImage(ctx context.Context, dto dto.CreateImage) (string, error) {
+func (s *imageService) CreateImage(ctx context.Context, dto dto.CreateImage) (entity.Image, error) {
 	return s.storage.CreateImage(ctx, dto)
 }
 
