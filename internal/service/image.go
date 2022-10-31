@@ -2,10 +2,13 @@ package service
 
 import (
 	"context"
+	"errors"
 
-	"github.com/bells307/everydaypic/internal/domain/dto"
-	"github.com/bells307/everydaypic/internal/domain/entity"
+	"github.com/bells307/everydaypic/internal/dto"
+	"github.com/bells307/everydaypic/internal/entity"
 )
+
+var ErrNotFound = errors.New("file not found")
 
 type ImageStorage interface {
 	GetImages(ctx context.Context, dto dto.GetImages) ([]entity.Image, error)

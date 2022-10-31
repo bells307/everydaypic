@@ -1,22 +1,13 @@
 package main
 
 import (
-	"github.com/bells307/everydaypic/internal/adapters/db/mongodb"
 	v1 "github.com/bells307/everydaypic/internal/controller/http/v1"
-	"github.com/bells307/everydaypic/internal/domain/service"
-	"github.com/bells307/everydaypic/internal/domain/usecase"
+	"github.com/bells307/everydaypic/internal/repository/mongodb"
+	"github.com/bells307/everydaypic/internal/service"
+	"github.com/bells307/everydaypic/pkg/middleware"
 	mongodriver "github.com/bells307/everydaypic/pkg/mongodb"
-	"github.com/bells307/everydaypic/pkg/mongodb/middleware"
 	"github.com/gin-gonic/gin"
-
-	swaggerFiles "github.com/swaggo/files"     // swagger embed files
-	ginSwagger "github.com/swaggo/gin-swagger" // gin-swagger middleware
 )
-
-// @title everydaypic API
-// @description API Server for everydaypic
-// @host      localhost:8080
-// @BasePath  /api/v1
 
 func main() {
 	mongoCfg := mongodriver.MongoDBConfig{
@@ -31,11 +22,9 @@ func main() {
 
 	imageStorage := mongodb.NewImageStorage(mongo)
 	imageService := service.NewImageService(imageStorage)
-	imageUsecase := usecase.NewImageUsecase(imageService)
-	imageHandler := v1.NewImageHandler(imageUsecase)
+	imageHandler := v1.NewImageHandler(imageService)
 
 	router := gin.Default()
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	router.Use(middleware.ErrorHandler)
 	imageHandler.Register(router)
 

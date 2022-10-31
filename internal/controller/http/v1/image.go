@@ -7,25 +7,25 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/bells307/everydaypic/internal/domain/dto"
-	"github.com/bells307/everydaypic/internal/domain/entity"
-	"github.com/bells307/everydaypic/internal/domain/usecase"
+	"github.com/bells307/everydaypic/internal/dto"
+	"github.com/bells307/everydaypic/internal/entity"
+	"github.com/bells307/everydaypic/internal/service"
 	"github.com/gin-gonic/gin"
 )
 
 type imageHandler struct {
-	imageUsecase ImageUsecase
+	imageService ImageService
 }
 
-type ImageUsecase interface {
+type ImageService interface {
 	GetImages(ctx context.Context, dto dto.GetImages) ([]entity.Image, error)
 	CreateImage(ctx context.Context, dto dto.CreateImage) (entity.Image, error)
 	DeleteImage(ctx context.Context, id string) error
 	DownloadImage(ctx context.Context, id string) ([]byte, error)
 }
 
-func NewImageHandler(imageUsecase ImageUsecase) *imageHandler {
-	return &imageHandler{imageUsecase}
+func NewImageHandler(imageService ImageService) *imageHandler {
+	return &imageHandler{imageService}
 }
 
 func (h *imageHandler) Register(e *gin.Engine) {
@@ -42,9 +42,6 @@ func (h *imageHandler) Register(e *gin.Engine) {
 
 }
 
-// @Summary Получить информацию об изображениях
-// @Description Получить информацию об изображениях
-// @ID get-images
 func (h *imageHandler) getImages(c *gin.Context) {
 	var getImages dto.GetImages
 
@@ -52,10 +49,10 @@ func (h *imageHandler) getImages(c *gin.Context) {
 		return
 	}
 
-	imgs, err := h.imageUsecase.GetImages(c.Request.Context(), getImages)
+	imgs, err := h.imageService.GetImages(c.Request.Context(), getImages)
 	if err != nil {
 		switch {
-		case errors.Is(err, usecase.ErrNotFound):
+		case errors.Is(err, service.ErrNotFound):
 			c.AbortWithStatus(http.StatusNotFound)
 			return
 		default:
@@ -96,7 +93,7 @@ func (h *imageHandler) createImage(c *gin.Context) {
 		Data:     data,
 	}
 
-	img, err := h.imageUsecase.CreateImage(c.Request.Context(), dto)
+	img, err := h.imageService.CreateImage(c.Request.Context(), dto)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -107,7 +104,7 @@ func (h *imageHandler) createImage(c *gin.Context) {
 
 func (h *imageHandler) deleteImage(c *gin.Context) {
 	id := c.Param("id")
-	err := h.imageUsecase.DeleteImage(c.Request.Context(), id)
+	err := h.imageService.DeleteImage(c.Request.Context(), id)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -116,11 +113,11 @@ func (h *imageHandler) deleteImage(c *gin.Context) {
 
 func (h *imageHandler) downloadImage(c *gin.Context) {
 	id := c.Param("id")
-	data, err := h.imageUsecase.DownloadImage(c.Request.Context(), id)
+	data, err := h.imageService.DownloadImage(c.Request.Context(), id)
 
 	if err != nil {
 		switch {
-		case errors.Is(err, usecase.ErrNotFound):
+		case errors.Is(err, service.ErrNotFound):
 			c.AbortWithStatus(http.StatusNotFound)
 			return
 		default:

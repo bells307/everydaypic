@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/bells307/everydaypic/internal/domain/dto"
-	"github.com/bells307/everydaypic/internal/domain/entity"
-	"github.com/bells307/everydaypic/internal/domain/usecase"
+	"github.com/bells307/everydaypic/internal/dto"
+	"github.com/bells307/everydaypic/internal/entity"
+	"github.com/bells307/everydaypic/internal/service"
 	"github.com/bells307/everydaypic/pkg/mongodb"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -64,7 +64,7 @@ func (s *imageStorage) GetImages(ctx context.Context, dto dto.GetImages) ([]enti
 	}
 
 	if len(imgs) == 0 {
-		return []entity.Image{}, usecase.ErrNotFound
+		return []entity.Image{}, service.ErrNotFound
 	}
 
 	return imgs, nil
@@ -102,7 +102,7 @@ func (s *imageStorage) DownloadImage(ctx context.Context, id string) ([]byte, er
 
 	data, err := s.db.DownloadFile(ctx, oid)
 	if err == mongo.ErrNoDocuments {
-		return []byte{}, usecase.ErrNotFound
+		return []byte{}, service.ErrNotFound
 	}
 	return data, nil
 }
