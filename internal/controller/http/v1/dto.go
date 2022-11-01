@@ -2,8 +2,12 @@ package v1
 
 import "mime/multipart"
 
+// Создание изображения
 type CreateImage struct {
-	Name     string                `form:"name" binding:"required"`
-	Filename string                `form:"filename" binding:"required"`
-	File     *multipart.FileHeader `form:"file" binding:"required"`
+	// Имя изображения
+	Name string `form:"name" binding:"required"`
+	// Имя файла
+	Filename string `form:"filename" binding:"required"`
+	// Бинарные данные файла
+	File *multipart.FileHeader `form:"file" binding:"required"`
 }

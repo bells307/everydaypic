@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Middleware обработки ошибок
 func ErrorHandler(c *gin.Context) {
 	c.Next()
 

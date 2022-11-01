@@ -33,7 +33,8 @@ Backend сервиса, хранящего изображения. \
         "filename": "2.jpg",
         "metadata": {
             "name": "ds3"
-        }
+        },
+        "uploadDate": "2022-10-29T09:28:37.779Z"
     }
 ]
 ```

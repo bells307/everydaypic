@@ -14,6 +14,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+// Реализация хранилища изображений в MongoDB
 type imageStorage struct {
 	db *mongodb.MongoDB
 }
@@ -22,6 +23,7 @@ func NewImageStorage(db *mongodb.MongoDB) *imageStorage {
 	return &imageStorage{db}
 }
 
+// Получить изображения
 func (s *imageStorage) GetImages(ctx context.Context, dto dto.GetImages) ([]entity.Image, error) {
 	filter := bson.M{}
 
@@ -70,6 +72,7 @@ func (s *imageStorage) GetImages(ctx context.Context, dto dto.GetImages) ([]enti
 	return imgs, nil
 }
 
+// Создать изображение
 func (s *imageStorage) CreateImage(ctx context.Context, dto dto.CreateImage) (entity.Image, error) {
 	log.Println("creating image in mongo ...")
 
@@ -89,11 +92,13 @@ func (s *imageStorage) CreateImage(ctx context.Context, dto dto.CreateImage) (en
 	return img, nil
 }
 
+// Удалить изображение
 func (s *imageStorage) DeleteImage(ctx context.Context, id string) error {
 	log.Printf("deleting image %s in mongo ...\n", id)
 	return nil
 }
 
+// Скачать изображение
 func (s *imageStorage) DownloadImage(ctx context.Context, id string) ([]byte, error) {
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -105,4 +110,23 @@ func (s *imageStorage) DownloadImage(ctx context.Context, id string) ([]byte, er
 		return []byte{}, service.ErrNotFound
 	}
 	return data, nil
+}
+
+// Создать изображение дня
+func (s *imageStorage) CreateImageOfTheDay(ctx context.Context, dayImg entity.DayImage) error {
+	oid, err := primitive.ObjectIDFromHex(dayImg.ID)
+	if err != nil {
+		return fmt.Errorf("can't convert id %v to hex string", dayImg.ID)
+	}
+
+	setAt := primitive.NewDateTimeFromTime(dayImg.SetAt)
+	obj := bson.M{
+		"_id":        oid,
+		"filename":   dayImg.Filename,
+		"metadata":   dayImg.Metadata,
+		"uploadDate": dayImg.UploadDate,
+		"setAt":      setAt,
+	}
+	s.db.InsertOne(ctx, "dayimage", obj)
+	return nil
 }

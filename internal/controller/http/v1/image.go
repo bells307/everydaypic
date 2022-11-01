@@ -13,14 +13,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Контроллер изображений
 type imageHandler struct {
 	imageService ImageService
 }
 
+// Интерфейс сервиса работы с изображениями
 type ImageService interface {
+	// Получить изображения
 	GetImages(ctx context.Context, dto dto.GetImages) ([]entity.Image, error)
+	// Создать изображение
 	CreateImage(ctx context.Context, dto dto.CreateImage) (entity.Image, error)
+	// Удалить изображение
 	DeleteImage(ctx context.Context, id string) error
+	// Скачать изображение
 	DownloadImage(ctx context.Context, id string) ([]byte, error)
 }
 
@@ -28,6 +34,7 @@ func NewImageHandler(imageService ImageService) *imageHandler {
 	return &imageHandler{imageService}
 }
 
+// Регистрация роутов контроллера
 func (h *imageHandler) Register(e *gin.Engine) {
 	v1 := e.Group("/v1")
 	{
@@ -42,6 +49,7 @@ func (h *imageHandler) Register(e *gin.Engine) {
 
 }
 
+// Получить изображения
 func (h *imageHandler) getImages(c *gin.Context) {
 	var getImages dto.GetImages
 
@@ -64,6 +72,7 @@ func (h *imageHandler) getImages(c *gin.Context) {
 	c.JSON(http.StatusOK, imgs)
 }
 
+// Создать изображение
 func (h *imageHandler) createImage(c *gin.Context) {
 	var createImage CreateImage
 
@@ -102,6 +111,7 @@ func (h *imageHandler) createImage(c *gin.Context) {
 	c.JSON(http.StatusOK, img)
 }
 
+// Удалить изображение
 func (h *imageHandler) deleteImage(c *gin.Context) {
 	id := c.Param("id")
 	err := h.imageService.DeleteImage(c.Request.Context(), id)
@@ -111,6 +121,7 @@ func (h *imageHandler) deleteImage(c *gin.Context) {
 	}
 }
 
+// Скачать изображение
 func (h *imageHandler) downloadImage(c *gin.Context) {
 	id := c.Param("id")
 	data, err := h.imageService.DownloadImage(c.Request.Context(), id)
