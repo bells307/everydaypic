@@ -18,11 +18,11 @@ type MongoDBConfig struct {
 	DbName string
 }
 
-type MongoDB struct {
+type MongoDBClient struct {
 	db *mongo.Database
 }
 
-func NewMongoDB(cfg MongoDBConfig) (*MongoDB, error) {
+func NewMongoDB(cfg MongoDBConfig) (*MongoDBClient, error) {
 	opts := options.Client().ApplyURI(cfg.Uri)
 	client, err := mongo.Connect(context.Background(), opts)
 	if err != nil {
@@ -34,19 +34,25 @@ func NewMongoDB(cfg MongoDBConfig) (*MongoDB, error) {
 		return nil, fmt.Errorf("can't create a handle to mongodb database %s", cfg.DbName)
 	}
 
-	return &MongoDB{
+	return &MongoDBClient{
 		db,
 	}, nil
 }
 
-// Найти документ в коллекции
-func (m *MongoDB) Find(ctx context.Context, collection string, filter any) (*mongo.Cursor, error) {
+// Найти документы в коллекции
+func (m *MongoDBClient) Find(ctx context.Context, collection string, filter any) (*mongo.Cursor, error) {
 	col := m.db.Collection(collection)
 	return col.Find(ctx, filter)
 }
 
+// Найти документ в коллекции
+func (m *MongoDBClient) FindOne(ctx context.Context, collection string, filter any) *mongo.SingleResult {
+	col := m.db.Collection(collection)
+	return col.FindOne(ctx, filter)
+}
+
 // Добавить элемент в коллекцию
-func (m *MongoDB) InsertOne(ctx context.Context, collection string, obj any) (oid primitive.ObjectID, err error) {
+func (m *MongoDBClient) InsertOne(ctx context.Context, collection string, obj any) (oid primitive.ObjectID, err error) {
 	res, err := m.db.Collection(collection).InsertOne(ctx, obj)
 	if err != nil {
 		return primitive.ObjectID{}, fmt.Errorf("error inserting to collection %s: %v", collection, err)
@@ -56,7 +62,7 @@ func (m *MongoDB) InsertOne(ctx context.Context, collection string, obj any) (oi
 }
 
 // Добавить или обновить элемент в коллекции
-func (m *MongoDB) Upsert(ctx context.Context, collection string, filter any, obj any) (*mongo.UpdateResult, error) {
+func (m *MongoDBClient) Upsert(ctx context.Context, collection string, filter any, obj any) (*mongo.UpdateResult, error) {
 	opts := options.Update().SetUpsert(true)
 	update := bson.M{"$set": obj}
 
@@ -69,7 +75,7 @@ func (m *MongoDB) Upsert(ctx context.Context, collection string, filter any, obj
 }
 
 // Загрузить файл в GridFS
-func (m *MongoDB) UploadFile(filename string, meta any, data []byte) (primitive.ObjectID, error) {
+func (m *MongoDBClient) UploadFile(filename string, meta any, data []byte) (primitive.ObjectID, error) {
 	bucket, err := gridfs.NewBucket(m.db)
 	if err != nil {
 		return primitive.ObjectID{}, fmt.Errorf("error creating gridfs bucket: %v", err)
@@ -92,7 +98,7 @@ func (m *MongoDB) UploadFile(filename string, meta any, data []byte) (primitive.
 }
 
 // Скачать файл из GridFS
-func (m *MongoDB) DownloadFile(ctx context.Context, oid primitive.ObjectID) ([]byte, error) {
+func (m *MongoDBClient) DownloadFile(ctx context.Context, oid primitive.ObjectID) ([]byte, error) {
 	// TODO: hardcode
 	col := m.db.Collection("fs.files")
 
