@@ -9,7 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-const COLLECTION_NAME = "images"
+const COLLECTION_NAME = "image"
 
 // Хранилище
 type imageMongoDBRepository struct {
