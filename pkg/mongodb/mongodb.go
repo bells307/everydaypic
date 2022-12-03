@@ -52,13 +52,8 @@ func (m *MongoDBClient) FindOne(ctx context.Context, collection string, filter a
 }
 
 // Добавить элемент в коллекцию
-func (m *MongoDBClient) InsertOne(ctx context.Context, collection string, obj any) (oid primitive.ObjectID, err error) {
-	res, err := m.db.Collection(collection).InsertOne(ctx, obj)
-	if err != nil {
-		return primitive.ObjectID{}, fmt.Errorf("error inserting to collection %s: %v", collection, err)
-	}
-	oid = res.InsertedID.(primitive.ObjectID)
-	return
+func (m *MongoDBClient) InsertOne(ctx context.Context, collection string, obj any) (*mongo.InsertOneResult, error) {
+	return m.db.Collection(collection).InsertOne(ctx, obj)
 }
 
 // Добавить или обновить элемент в коллекции

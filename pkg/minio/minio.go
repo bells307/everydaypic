@@ -17,7 +17,7 @@ type MinIOClient struct {
 
 func NewMinIOClient(endpoint, accessKeyID, secretAccessKey string) (*MinIOClient, error) {
 	client, err := minio.New(endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, "4121"),
+		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
 		Secure: false,
 	})
 

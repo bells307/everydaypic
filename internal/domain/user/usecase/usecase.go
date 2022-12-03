@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 
+	image_model "github.com/bells307/everydaypic/internal/domain/image/model"
 	"github.com/bells307/everydaypic/internal/domain/user/dto"
 	"github.com/bells307/everydaypic/internal/domain/user/model"
 )
@@ -13,8 +14,17 @@ type userService interface {
 	Delete(ctx context.Context, userID string) error
 }
 
+type imageService interface {
+	GetUserImages(ctx context.Context, userID string) ([]image_model.Image, error)
+}
+
 type UserUsecase struct {
-	userService userService
+	userService  userService
+	imageService imageService
+}
+
+func NewUserUsecase(userService userService, imageService imageService) *UserUsecase {
+	return &UserUsecase{userService, imageService}
 }
 
 // Добавить пользователя

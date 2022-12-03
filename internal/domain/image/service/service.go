@@ -3,24 +3,23 @@ package service
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/url"
-	"time"
 
 	"github.com/bells307/everydaypic/internal/domain/image/dto"
 	"github.com/bells307/everydaypic/internal/domain/image/model"
-	"github.com/google/uuid"
 )
 
 // Интерфейс репозитория с информацией о картинках
 type imageRepository interface {
-	Add(ctx context.Context, image model.Image) error
+	Add(ctx context.Context, name, fileName, userID string) (model.Image, error)
 	Delete(ctx context.Context, imageID string) error
-	GetByID(ctx context.Context, imageID string) (image model.Image, err error)
+	Get(ctx context.Context, dto dto.GetImages) ([]model.Image, error)
 }
 
 // Интерфейс хранилища файлов
 type imageFileStorage interface {
-	Upload(ctx context.Context, name string, filename string) error
+	Upload(ctx context.Context, name string, filename string, fileSize int64, data io.Reader) error
 	Delete(ctx context.Context, name string) error
 	GetUrl(ctx context.Context, imageID string) (url.URL, error)
 }
@@ -36,17 +35,19 @@ func NewImageService(imageRepository imageRepository, imageFileStorage imageFile
 
 // Добавить изображение
 func (s *ImageService) Add(ctx context.Context, dto dto.CreateImage) (model.Image, error) {
-	image := model.Image{
-		ID:       uuid.NewString(),
-		FileName: dto.FileName,
-		Created:  time.Time{},
-	}
+	// image := model.Image{
+	// 	ID:       uuid.NewString(),
+	// 	Name:     dto.Name,
+	// 	FileName: dto.FileName,
+	// 	Created:  time.Now(),
+	// }
 
-	if err := s.imageRepository.Add(ctx, image); err != nil {
+	image, err := s.imageRepository.Add(ctx, dto.Name, dto.FileName, dto.UserID)
+	if err != nil {
 		return image, fmt.Errorf("can't upload image to repository: %v", err)
 	}
 
-	if err := s.imageFileStorage.Upload(ctx, image.ID, image.FileName); err != nil {
+	if err := s.imageFileStorage.Upload(ctx, image.ID, image.FileName, dto.FileSize, dto.Data); err != nil {
 		return image, fmt.Errorf("can't upload image to file storage: %v", err)
 	}
 
@@ -67,9 +68,9 @@ func (s *ImageService) Delete(ctx context.Context, imageID string) error {
 	return nil
 }
 
-// Получить изображение по ID
-func (s *ImageService) GetByID(ctx context.Context, imageID string) (image model.Image, err error) {
-	return s.imageRepository.GetByID(ctx, imageID)
+// Получить изображения по фильтру
+func (s *ImageService) Get(ctx context.Context, dto dto.GetImages) ([]model.Image, error) {
+	return s.imageRepository.Get(ctx, dto)
 }
 
 // Получить ссылку на скачивание

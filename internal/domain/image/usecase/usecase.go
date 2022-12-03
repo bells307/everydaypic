@@ -13,25 +13,25 @@ import (
 type imageService interface {
 	Add(ctx context.Context, dto dto.CreateImage) (model.Image, error)
 	Delete(ctx context.Context, imageID string) error
-	GetByID(ctx context.Context, imageID string) (model.Image, error)
+	Get(ctx context.Context, dto dto.GetImages) ([]model.Image, error)
 	GetUrl(ctx context.Context, imageID string) (url.URL, error)
 }
 
-type imageUsecase struct {
+type ImageUsecase struct {
 	imageService imageService
 }
 
-func NewImageUsecase(imageService imageService) *imageUsecase {
-	return &imageUsecase{imageService}
+func NewImageUsecase(imageService imageService) *ImageUsecase {
+	return &ImageUsecase{imageService}
 }
 
-// Получить изображение по ID
-func (u *imageUsecase) GetByID(ctx context.Context, imageID string) (model.Image, error) {
-	return u.imageService.GetByID(ctx, imageID)
+// Получить изображения по фильтру
+func (u *ImageUsecase) GetImages(ctx context.Context, dto dto.GetImages) ([]model.Image, error) {
+	return u.imageService.Get(ctx, dto)
 }
 
 // Добавить изображение
-func (u *imageUsecase) AddImage(ctx context.Context, dto dto.CreateImage) (model.Image, error) {
+func (u *ImageUsecase) AddImage(ctx context.Context, dto dto.CreateImage) (model.Image, error) {
 	image, err := u.imageService.Add(ctx, dto)
 	if err != nil {
 		return model.Image{}, fmt.Errorf("can't add image: %v", err)
@@ -41,11 +41,11 @@ func (u *imageUsecase) AddImage(ctx context.Context, dto dto.CreateImage) (model
 }
 
 // Удалить изображение
-func (u *imageUsecase) DeleteImage(ctx context.Context, imageID string) error {
+func (u *ImageUsecase) DeleteImage(ctx context.Context, imageID string) error {
 	return u.imageService.Delete(ctx, imageID)
 }
 
 // Получить ссылку на скачивание
-func (u *imageUsecase) GetDownloadUrl(ctx context.Context, imageID string) (url.URL, error) {
+func (u *ImageUsecase) GetDownloadUrl(ctx context.Context, imageID string) (url.URL, error) {
 	return u.imageService.GetUrl(ctx, imageID)
 }
