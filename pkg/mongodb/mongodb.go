@@ -14,8 +14,8 @@ import (
 
 // Конфигурация mongodb
 type MongoDBConfig struct {
-	Uri    string
-	DbName string
+	Uri    string `mapstructure:"URI"`
+	DbName string `mapstructure:"DBNAME"`
 }
 
 type MongoDBClient struct {

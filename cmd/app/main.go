@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/bells307/everydaypic/cmd/app/config"
 	"github.com/bells307/everydaypic/internal/controller/http/v1/image"
 	"github.com/bells307/everydaypic/internal/domain/image/repository"
 	"github.com/bells307/everydaypic/internal/domain/image/service"
@@ -14,20 +15,21 @@ import (
 
 // @title everydaypic API
 // @verion 0.1
-
 func main() {
-	// Конфигурация mongodb
-	mongoCfg := mongodb.MongoDBConfig{
-		Uri:    "mongodb://admin:admin@localhost:27017/",
-		DbName: "everydaypic",
-	}
-
-	mongo, err := mongodb.NewMongoDB(mongoCfg)
+	cfg, err := config.LoadConfig(".env")
 	if err != nil {
 		panic(err)
 	}
 
-	minioClient, _ := minio.NewMinIOClient("localhost:9000", "user", "mysuperpass")
+	mongo, err := mongodb.NewMongoDB(cfg.MongoDB)
+	if err != nil {
+		panic(err)
+	}
+
+	minioClient, err := minio.NewMinIOClient(cfg.MinIO)
+	if err != nil {
+		panic(err)
+	}
 
 	router := gin.Default()
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
@@ -39,5 +41,5 @@ func main() {
 	imageHandler := image.NewImageHandler(imageUsecase)
 	imageHandler.Register(router)
 
-	router.Run("localhost:8080")
+	router.Run(cfg.Listen)
 }

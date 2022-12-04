@@ -13,13 +13,19 @@ import (
 	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
+type MinIOClientConfig struct {
+	Endpoint        string `mapstructure:"ENDPOINT"`
+	AccessKeyID     string `mapstructure:"ACCESS_KEY_ID"`
+	SecretAccessKey string `mapstructure:"SECRET_ACCESS_KEY"`
+}
+
 type MinIOClient struct {
 	client *minio.Client
 }
 
-func NewMinIOClient(endpoint, accessKeyID, secretAccessKey string) (*MinIOClient, error) {
-	client, err := minio.New(endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
+func NewMinIOClient(cfg MinIOClientConfig) (*MinIOClient, error) {
+	client, err := minio.New(cfg.Endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(cfg.AccessKeyID, cfg.SecretAccessKey, ""),
 		Secure: false,
 	})
 
