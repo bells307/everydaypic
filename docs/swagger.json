@@ -1,0 +1,206 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "everydaypic API",
+        "contact": {}
+    },
+    "paths": {
+        "/v1/image": {
+            "post": {
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "image"
+                ],
+                "summary": "Добавить изображение",
+                "operationId": "create-image",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "binary",
+                        "description": "Бинарные данные файла",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Имя файла",
+                        "name": "fileName",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Имя изображения",
+                        "name": "name",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Изображение успешно создано",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Image"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неправильно сформирован запрос",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервиса",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/image/info": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "image"
+                ],
+                "summary": "Получить информация об изображениях",
+                "operationId": "get-images-info",
+                "parameters": [
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "Имя файла",
+                        "name": "fileName",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "ID изображения",
+                        "name": "id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Информация об изображении",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Image"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неправильно сформирован запрос",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Изображение не найдено",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервиса",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/image/{id}": {
+            "get": {
+                "produces": [
+                    "image/png",
+                    "image/jpeg",
+                    "image/gif",
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "image"
+                ],
+                "summary": "Скачать изображение",
+                "operationId": "download-image",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID изображения",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Бинарные данные изображения",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Изображение не найдено",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервиса",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "model.Image": {
+            "type": "object",
+            "properties": {
+                "created": {
+                    "description": "Дата создания",
+                    "type": "string"
+                },
+                "fileName": {
+                    "description": "Имя файла",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "ID изображения",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Имя изображения",
+                    "type": "string"
+                },
+                "userID": {
+                    "description": "ID пользователя, добавившего изображение",
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

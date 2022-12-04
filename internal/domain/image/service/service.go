@@ -15,13 +15,14 @@ type imageRepository interface {
 	Add(ctx context.Context, name, fileName, userID string) (model.Image, error)
 	Delete(ctx context.Context, imageID string) error
 	Get(ctx context.Context, dto dto.GetImages) ([]model.Image, error)
+	CheckExists(ctx context.Context, imageID string) (bool, error)
 }
 
 // Интерфейс хранилища файлов
 type imageFileStorage interface {
-	Upload(ctx context.Context, name string, filename string, fileSize int64, data io.Reader) error
+	Upload(ctx context.Context, name string, filename string, fileSize int64, data io.ReadSeeker) error
 	Delete(ctx context.Context, name string) error
-	GetUrl(ctx context.Context, imageID string) (url.URL, error)
+	GetUrl(ctx context.Context, imageID string) (*url.URL, error)
 }
 
 type ImageService struct {
@@ -73,7 +74,11 @@ func (s *ImageService) Get(ctx context.Context, dto dto.GetImages) ([]model.Imag
 	return s.imageRepository.Get(ctx, dto)
 }
 
+func (s *ImageService) CheckExists(ctx context.Context, imageID string) (bool, error) {
+	return s.imageRepository.CheckExists(ctx, imageID)
+}
+
 // Получить ссылку на скачивание
-func (s *ImageService) GetUrl(ctx context.Context, imageID string) (url.URL, error) {
+func (s *ImageService) GetUrl(ctx context.Context, imageID string) (*url.URL, error) {
 	return s.imageFileStorage.GetUrl(ctx, imageID)
 }

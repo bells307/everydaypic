@@ -4,9 +4,14 @@ import "time"
 
 // Изображение
 type Image struct {
-	ID       string    `json:"id" bson:"_id"`
-	Name     string    `json:"name" bson:"name"`
-	FileName string    `json:"filename" bson:"fileName"`
-	UserID   string    `json:"userID" bson:"userID"`
-	Created  time.Time `json:"created" bson:"created"`
+	// ID изображения
+	ID string `json:"id" bson:"_id"`
+	// Имя изображения
+	Name string `json:"name" bson:"name"`
+	// Имя файла
+	FileName string `json:"fileName" bson:"fileName"`
+	// ID пользователя, добавившего изображение
+	UserID string `json:"userID" bson:"userID"`
+	// Дата создания
+	Created time.Time `json:"created" bson:"created"`
 }

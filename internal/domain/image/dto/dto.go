@@ -7,10 +7,13 @@ type CreateImage struct {
 	FileName string
 	UserID   string
 	FileSize int64
-	Data     io.Reader
+	Data     io.ReadSeeker
 }
 
+// Фильтр изображений
 type GetImages struct {
-	ID       []string `form:"id" json:"id"`
+	// ID изображения
+	ID []string `form:"id" json:"id"`
+	// Имя файла
 	FileName []string `form:"fileName" json:"fileName"`
 }

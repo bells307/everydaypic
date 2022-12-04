@@ -1,9 +1,11 @@
 package minio
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
+	"net/http"
 	"net/url"
 	"time"
 
@@ -28,7 +30,7 @@ func NewMinIOClient(endpoint, accessKeyID, secretAccessKey string) (*MinIOClient
 	return &MinIOClient{client}, nil
 }
 
-func (c *MinIOClient) UploadFile(ctx context.Context, objectName, fileName, bucketName string, fileSize int64, reader io.Reader) error {
+func (c *MinIOClient) UploadFile(ctx context.Context, objectName, fileName, bucketName string, fileSize int64, reader io.ReadSeeker) error {
 	exists, errBucketExists := c.client.BucketExists(ctx, bucketName)
 	if errBucketExists != nil || !exists {
 		err := c.client.MakeBucket(ctx, bucketName, minio.MakeBucketOptions{})
@@ -37,12 +39,17 @@ func (c *MinIOClient) UploadFile(ctx context.Context, objectName, fileName, buck
 		}
 	}
 
-	_, err := c.client.PutObject(ctx, bucketName, objectName, reader, fileSize,
+	contentType, err := detectContentType(reader)
+	if err != nil {
+		return fmt.Errorf("failed to detect content type: %w", err)
+	}
+
+	_, err = c.client.PutObject(ctx, bucketName, objectName, reader, fileSize,
 		minio.PutObjectOptions{
 			UserMetadata: map[string]string{
 				"name": fileName,
 			},
-			ContentType: "application/octet-stream",
+			ContentType: contentType,
 		},
 	)
 
@@ -55,4 +62,18 @@ func (c *MinIOClient) UploadFile(ctx context.Context, objectName, fileName, buck
 
 func (c *MinIOClient) GetFileURL(ctx context.Context, bucketName, objectName string, expires time.Duration) (*url.URL, error) {
 	return c.client.PresignedGetObject(ctx, bucketName, objectName, expires, url.Values{})
+}
+
+func detectContentType(reader io.ReadSeeker) (string, error) {
+	dst := bytes.NewBuffer([]byte{})
+
+	if _, err := io.CopyN(dst, reader, 512); err != nil {
+		return "", err
+	}
+
+	if _, err := reader.Seek(0, 0); err != nil {
+		return "", err
+	}
+
+	return http.DetectContentType(dst.Bytes()), nil
 }

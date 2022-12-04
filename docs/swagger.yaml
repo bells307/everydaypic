@@ -1,0 +1,138 @@
+definitions:
+  model.Image:
+    properties:
+      created:
+        description: Дата создания
+        type: string
+      fileName:
+        description: Имя файла
+        type: string
+      id:
+        description: ID изображения
+        type: string
+      name:
+        description: Имя изображения
+        type: string
+      userID:
+        description: ID пользователя, добавившего изображение
+        type: string
+    type: object
+info:
+  contact: {}
+  title: everydaypic API
+paths:
+  /v1/image:
+    post:
+      consumes:
+      - multipart/form-data
+      operationId: create-image
+      parameters:
+      - description: Бинарные данные файла
+        format: binary
+        in: formData
+        name: file
+        required: true
+        type: string
+      - description: Имя файла
+        in: formData
+        name: fileName
+        required: true
+        type: string
+      - description: Имя изображения
+        in: formData
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Изображение успешно создано
+          schema:
+            items:
+              $ref: '#/definitions/model.Image'
+            type: array
+        "400":
+          description: Неправильно сформирован запрос
+          schema:
+            type: string
+        "500":
+          description: Внутренняя ошибка сервиса
+          schema:
+            type: string
+      summary: Добавить изображение
+      tags:
+      - image
+  /v1/image/{id}:
+    get:
+      operationId: download-image
+      parameters:
+      - description: ID изображения
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - image/png
+      - image/jpeg
+      - image/gif
+      - application/octet-stream
+      responses:
+        "200":
+          description: Бинарные данные изображения
+          schema:
+            type: string
+        "404":
+          description: Изображение не найдено
+          schema:
+            type: string
+        "500":
+          description: Внутренняя ошибка сервиса
+          schema:
+            type: string
+      summary: Скачать изображение
+      tags:
+      - image
+  /v1/image/info:
+    get:
+      consumes:
+      - application/json
+      operationId: get-images-info
+      parameters:
+      - description: Имя файла
+        in: query
+        items:
+          type: string
+        name: fileName
+        type: array
+      - description: ID изображения
+        in: query
+        items:
+          type: string
+        name: id
+        type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Информация об изображении
+          schema:
+            items:
+              $ref: '#/definitions/model.Image'
+            type: array
+        "400":
+          description: Неправильно сформирован запрос
+          schema:
+            type: string
+        "404":
+          description: Изображение не найдено
+          schema:
+            type: string
+        "500":
+          description: Внутренняя ошибка сервиса
+          schema:
+            type: string
+      summary: Получить информация об изображениях
+      tags:
+      - image
+swagger: "2.0"

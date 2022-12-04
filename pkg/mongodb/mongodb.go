@@ -120,3 +120,8 @@ func (m *MongoDBClient) DownloadFile(ctx context.Context, oid primitive.ObjectID
 
 	return buf.Bytes(), nil
 }
+
+// Посчитать количество элементов в коллекции, удовлетворяющих условию
+func (m *MongoDBClient) GetCount(ctx context.Context, collection string, filter any) (int64, error) {
+	return m.db.Collection(collection).CountDocuments(ctx, filter)
+}

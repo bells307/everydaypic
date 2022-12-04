@@ -8,7 +8,12 @@ import (
 	"github.com/bells307/everydaypic/pkg/minio"
 	"github.com/bells307/everydaypic/pkg/mongodb"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
+
+// @title everydaypic API
+// @verion 0.1
 
 func main() {
 	// Конфигурация mongodb
@@ -25,6 +30,7 @@ func main() {
 	minioClient, _ := minio.NewMinIOClient("localhost:9000", "user", "mysuperpass")
 
 	router := gin.Default()
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	imageRepo := repository.NewImageMongoDBRepository(mongo)
 	imageFS := repository.NewMinIOImageStorage(minioClient)

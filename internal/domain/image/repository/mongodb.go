@@ -30,6 +30,7 @@ func (r *imageMongoDBRepository) Add(ctx context.Context, name, fileName, userID
 	doc := bson.M{
 		"name":     name,
 		"fileName": fileName,
+		"userID":   userID,
 		"created":  created,
 	}
 
@@ -79,7 +80,7 @@ func (r *imageMongoDBRepository) Get(ctx context.Context, dto dto.GetImages) ([]
 	}
 
 	if len(fileNames) > 0 {
-		filter["filename"] = bson.M{"$in": fileNames}
+		filter["fileName"] = bson.M{"$in": fileNames}
 	}
 
 	cur, err := r.mongoDBClient.Find(ctx, COLLECTION_NAME, filter)
@@ -94,4 +95,18 @@ func (r *imageMongoDBRepository) Get(ctx context.Context, dto dto.GetImages) ([]
 	}
 
 	return imgs, nil
+}
+
+func (r *imageMongoDBRepository) CheckExists(ctx context.Context, imageID string) (bool, error) {
+	imageOID, err := primitive.ObjectIDFromHex(imageID)
+	if err != nil {
+		return false, fmt.Errorf("can't convert %s to ObjectID: %v", imageID, err)
+	}
+
+	c, err := r.mongoDBClient.GetCount(ctx, COLLECTION_NAME, bson.M{"_id": imageOID})
+	if err != nil {
+		return false, fmt.Errorf("error counting collection %s with ID %s: %s", COLLECTION_NAME, imageID, err)
+	}
+
+	return c > 0, nil
 }

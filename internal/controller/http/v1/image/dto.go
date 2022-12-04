@@ -9,5 +9,5 @@ type CreateImage struct {
 	// Имя файла
 	FileName string `form:"fileName" binding:"required"`
 	// Бинарные данные файла
-	File *multipart.FileHeader `form:"file" binding:"required"`
+	File *multipart.FileHeader `form:"file" binding:"required" swaggertype:"string" format:"binary"`
 }
