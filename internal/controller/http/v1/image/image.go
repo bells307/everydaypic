@@ -3,8 +3,8 @@ package image
 import (
 	"net/http"
 
-	"github.com/bells307/everydaypic/internal/domain/image/dto"
 	"github.com/bells307/everydaypic/internal/domain/image/usecase"
+	"github.com/bells307/everydaypic/internal/domain/image/usecase/dto"
 	"github.com/gin-gonic/gin"
 
 	_ "github.com/bells307/everydaypic/docs"
@@ -95,7 +95,7 @@ func (h *imageHandler) createImage(c *gin.Context) {
 		Data:     data,
 	}
 
-	img, err := h.imageUsecase.AddImage(c.Request.Context(), dto)
+	img, err := h.imageUsecase.CreateImage(c.Request.Context(), dto)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return

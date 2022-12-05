@@ -66,6 +66,10 @@ func (c *MinIOClient) UploadFile(ctx context.Context, objectName, fileName, buck
 	return nil
 }
 
+func (c *MinIOClient) DeleteFile(ctx context.Context, objectName, bucketName string) error {
+	return c.client.RemoveObject(ctx, bucketName, objectName, minio.RemoveObjectOptions{})
+}
+
 func (c *MinIOClient) GetFileURL(ctx context.Context, bucketName, objectName string, expires time.Duration) (*url.URL, error) {
 	return c.client.PresignedGetObject(ctx, bucketName, objectName, expires, url.Values{})
 }

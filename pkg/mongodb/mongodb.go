@@ -56,6 +56,16 @@ func (m *MongoDBClient) InsertOne(ctx context.Context, collection string, obj an
 	return m.db.Collection(collection).InsertOne(ctx, obj)
 }
 
+// Удалить документ
+func (m *MongoDBClient) DeleteOne(ctx context.Context, collection string, obj any) (*mongo.DeleteResult, error) {
+	return m.db.Collection(collection).DeleteOne(ctx, obj)
+}
+
+// Удалить документы
+func (m *MongoDBClient) DeleteMany(ctx context.Context, collection string, obj any) (*mongo.DeleteResult, error) {
+	return m.db.Collection(collection).DeleteMany(ctx, obj)
+}
+
 // Добавить или обновить элемент в коллекции
 func (m *MongoDBClient) Upsert(ctx context.Context, collection string, filter any, obj any) (*mongo.UpdateResult, error) {
 	opts := options.Update().SetUpsert(true)
