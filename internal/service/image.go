@@ -2,17 +2,17 @@ package service
 
 import (
 	"context"
+	"time"
 
-	"github.com/bells307/everydaypic/internal/domain/image/model"
-	repoDTO "github.com/bells307/everydaypic/internal/domain/image/repository/dto"
-	"github.com/bells307/everydaypic/internal/domain/image/service/dto"
+	"github.com/bells307/everydaypic/internal/model"
+	"github.com/google/uuid"
 )
 
 // Интерфейс репозитория с информацией о картинках
 type imageRepository interface {
 	Create(ctx context.Context, image model.Image) error
 	Delete(ctx context.Context, imageID string) error
-	GetByFilter(ctx context.Context, dto repoDTO.GetImagesFilter) ([]model.Image, error)
+	GetByFilter(ctx context.Context, IDs, fileNames []string) ([]model.Image, error)
 	CheckExists(ctx context.Context, imageID string) (bool, error)
 }
 
@@ -25,8 +25,16 @@ func NewImageService(imageRepository imageRepository) *ImageService {
 }
 
 // Добавить изображение
-func (s *ImageService) Create(ctx context.Context, image model.Image) error {
-	return s.repo.Create(ctx, image)
+func (s *ImageService) Create(ctx context.Context, name, fileName, userID string) (model.Image, error) {
+	image := model.Image{
+		ID:       uuid.NewString(),
+		Name:     name,
+		FileName: fileName,
+		UserID:   userID,
+		Created:  time.Now(),
+	}
+
+	return image, s.repo.Create(ctx, image)
 }
 
 // Удалить изображение
@@ -35,10 +43,11 @@ func (s *ImageService) Delete(ctx context.Context, imageID string) error {
 }
 
 // Получить изображения по фильтру
-func (s *ImageService) GetByFilter(ctx context.Context, dto dto.GetImagesFilter) ([]model.Image, error) {
-	return s.repo.GetByFilter(ctx, dto.ToRepoDTO())
+func (s *ImageService) GetByFilter(ctx context.Context, IDs, fileNames []string) ([]model.Image, error) {
+	return s.repo.GetByFilter(ctx, IDs, fileNames)
 }
 
+// Проверить существование изображения
 func (s *ImageService) CheckExists(ctx context.Context, imageID string) (bool, error) {
 	return s.repo.CheckExists(ctx, imageID)
 }

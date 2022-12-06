@@ -2,6 +2,7 @@ package dto
 
 import "io"
 
+// Создание изображения
 type CreateImage struct {
 	Name     string
 	FileName string
@@ -10,10 +11,10 @@ type CreateImage struct {
 	Data     io.ReadSeeker
 }
 
-// Фильтр изображений
+// Получение изображений по фильтру
 type GetImages struct {
 	// ID изображения
-	ID []string `form:"id" json:"id"`
+	ID []string
 	// Имя файла
-	FileName []string `form:"fileName" json:"fileName"`
+	FileName []string
 }

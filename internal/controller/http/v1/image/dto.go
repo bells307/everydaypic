@@ -11,3 +11,11 @@ type CreateImage struct {
 	// Бинарные данные файла
 	File *multipart.FileHeader `form:"file" binding:"required" swaggertype:"string" format:"binary"`
 }
+
+// Фильтр изображений
+type GetImages struct {
+	// ID изображения
+	ID []string `form:"id" json:"id"`
+	// Имя файла
+	FileName []string `form:"fileName" json:"fileName"`
+}

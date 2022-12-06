@@ -4,34 +4,26 @@ import (
 	"context"
 	"fmt"
 	"net/url"
-	"time"
 
-	fileService "github.com/bells307/everydaypic/internal/domain/file/service"
-	fileServiceDTO "github.com/bells307/everydaypic/internal/domain/file/service/dto"
-	"github.com/bells307/everydaypic/internal/domain/image/model"
-	imageService "github.com/bells307/everydaypic/internal/domain/image/service"
-	imageServiceDTO "github.com/bells307/everydaypic/internal/domain/image/service/dto"
-	"github.com/bells307/everydaypic/internal/domain/image/usecase/dto"
-	"github.com/google/uuid"
+	"github.com/bells307/everydaypic/internal/dto"
+	"github.com/bells307/everydaypic/internal/model"
+	"github.com/bells307/everydaypic/internal/service"
 )
 
 const IMAGE_BUCKET = "images"
 
 type ImageUsecase struct {
-	imageService *imageService.ImageService
-	fileService  *fileService.FileService
+	imageService *service.ImageService
+	fileService  *service.FileService
 }
 
-func NewImageUsecase(imageService *imageService.ImageService, fileService *fileService.FileService) *ImageUsecase {
+func NewImageUsecase(imageService *service.ImageService, fileService *service.FileService) *ImageUsecase {
 	return &ImageUsecase{imageService, fileService}
 }
 
 // Получить изображения по фильтру
-func (u *ImageUsecase) GetImages(ctx context.Context, dto dto.GetImages) ([]model.Image, error) {
-	return u.imageService.GetByFilter(ctx, imageServiceDTO.GetImagesFilter{
-		ID:       dto.ID,
-		FileName: dto.FileName,
-	})
+func (u *ImageUsecase) GetImages(ctx context.Context, getImages dto.GetImages) ([]model.Image, error) {
+	return u.imageService.GetByFilter(ctx, getImages.ID, getImages.FileName)
 }
 
 // Проверить существование изображения по ID
@@ -40,29 +32,21 @@ func (u *ImageUsecase) CheckImageExists(ctx context.Context, imageID string) (bo
 }
 
 // Добавить изображение
-func (u *ImageUsecase) CreateImage(ctx context.Context, dto dto.CreateImage) (img model.Image, err error) {
-	img = model.Image{
-		ID:       uuid.NewString(),
-		Name:     dto.Name,
-		FileName: dto.FileName,
-		UserID:   dto.UserID,
-		Created:  time.Now(),
-	}
-
+func (u *ImageUsecase) CreateImage(ctx context.Context, createImage dto.CreateImage) (img model.Image, err error) {
 	// TODO: предусмотреть откат изменений при неудаче одного из этапов (транзакция?)
 
-	// Загружаем в image service
-	if err := u.imageService.Create(ctx, img); err != nil {
+	img, err = u.imageService.Create(ctx, createImage.Name, createImage.FileName, createImage.UserID)
+	if err != nil {
 		return img, fmt.Errorf("can't create image %s (%s): %v", img.Name, img.ID, err)
 	}
 
 	// Загружаем в file service
-	fileServiceDTO := fileServiceDTO.UploadFile{
+	fileServiceDTO := dto.UploadFile{
 		Bucket:   IMAGE_BUCKET,
 		Name:     img.ID,
-		Filename: dto.FileName,
-		FileSize: dto.FileSize,
-		Data:     dto.Data,
+		Filename: createImage.FileName,
+		FileSize: createImage.FileSize,
+		Data:     createImage.Data,
 	}
 
 	if err := u.fileService.Upload(ctx, fileServiceDTO); err != nil {

@@ -2,16 +2,16 @@ package service
 
 import (
 	"context"
+	"io"
 	"net/url"
 
-	repoDTO "github.com/bells307/everydaypic/internal/domain/file/repository/dto"
-	"github.com/bells307/everydaypic/internal/domain/file/service/dto"
+	"github.com/bells307/everydaypic/internal/dto"
 )
 
 // Интерфейс хранилища файлов
 type fileRepository interface {
 	// Загрузить файл
-	Upload(ctx context.Context, dto repoDTO.UploadFile) error
+	Upload(ctx context.Context, name, fileName, bucket string, fileSize int64, data io.ReadSeeker) error
 	// Удалить файл
 	Delete(ctx context.Context, bucket, name string) error
 	// Получить URL файла
@@ -27,8 +27,14 @@ func NewFileService(repo fileRepository) *FileService {
 	return &FileService{repo}
 }
 
-func (s *FileService) Upload(ctx context.Context, dto dto.UploadFile) error {
-	return s.repo.Upload(ctx, dto.ToRepoDTO())
+func (s *FileService) Upload(ctx context.Context, uploadFile dto.UploadFile) error {
+	return s.repo.Upload(
+		ctx, uploadFile.Name,
+		uploadFile.Filename,
+		uploadFile.Bucket,
+		uploadFile.FileSize,
+		uploadFile.Data,
+	)
 }
 
 func (s *FileService) Delete(ctx context.Context, bucket, name string) error {

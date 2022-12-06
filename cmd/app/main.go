@@ -3,13 +3,11 @@ package main
 import (
 	"github.com/bells307/everydaypic/cmd/app/config"
 	"github.com/bells307/everydaypic/internal/controller/http/v1/image"
-	minioRepo "github.com/bells307/everydaypic/internal/domain/file/repository/minio"
-	fileService "github.com/bells307/everydaypic/internal/domain/file/service"
-	"github.com/bells307/everydaypic/internal/domain/image/repository/mongodb"
-	imageService "github.com/bells307/everydaypic/internal/domain/image/service"
-	"github.com/bells307/everydaypic/internal/domain/image/usecase"
+	"github.com/bells307/everydaypic/internal/repository"
+	"github.com/bells307/everydaypic/internal/service"
+	"github.com/bells307/everydaypic/internal/usecase"
 	"github.com/bells307/everydaypic/pkg/minio"
-	mongoClient "github.com/bells307/everydaypic/pkg/mongodb"
+	"github.com/bells307/everydaypic/pkg/mongodb"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -23,7 +21,7 @@ func main() {
 		panic(err)
 	}
 
-	mongo, err := mongoClient.NewMongoDB(cfg.MongoDB)
+	mongo, err := mongodb.NewMongoDB(cfg.MongoDB)
 	if err != nil {
 		panic(err)
 	}
@@ -36,11 +34,11 @@ func main() {
 	router := gin.Default()
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	fileRepo := minioRepo.NewMinIOFileRepository(minioClient)
-	fileService := fileService.NewFileService(fileRepo)
+	fileRepo := repository.NewMinIOFileRepository(minioClient)
+	fileService := service.NewFileService(fileRepo)
 
-	imageRepo := mongodb.NewImageMongoDBRepository(mongo)
-	imageService := imageService.NewImageService(imageRepo)
+	imageRepo := repository.NewImageMongoDBRepository(mongo)
+	imageService := service.NewImageService(imageRepo)
 
 	imageUsecase := usecase.NewImageUsecase(imageService, fileService)
 	imageHandler := image.NewImageHandler(imageUsecase)

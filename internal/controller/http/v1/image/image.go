@@ -3,11 +3,11 @@ package image
 import (
 	"net/http"
 
-	"github.com/bells307/everydaypic/internal/domain/image/usecase"
-	"github.com/bells307/everydaypic/internal/domain/image/usecase/dto"
 	"github.com/gin-gonic/gin"
 
 	_ "github.com/bells307/everydaypic/docs"
+	"github.com/bells307/everydaypic/internal/dto"
+	"github.com/bells307/everydaypic/internal/usecase"
 )
 
 type imageHandler struct {
@@ -43,12 +43,17 @@ func (h *imageHandler) Register(e *gin.Engine) {
 // @Failure     500 {string} string "Внутренняя ошибка сервиса"
 // @Router      /v1/image/info [get]
 func (h *imageHandler) getImagesInfo(c *gin.Context) {
-	var getImages dto.GetImages
+	var getImages GetImages
 	if err := c.Bind(&getImages); err != nil {
 		return
 	}
 
-	imgs, err := h.imageUsecase.GetImages(c.Request.Context(), getImages)
+	dto := dto.GetImages{
+		ID:       getImages.ID,
+		FileName: getImages.FileName,
+	}
+
+	imgs, err := h.imageUsecase.GetImages(c.Request.Context(), dto)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return

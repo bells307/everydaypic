@@ -1,11 +1,11 @@
-package minio
+package repository
 
 import (
 	"context"
+	"io"
 	"net/url"
 	"time"
 
-	"github.com/bells307/everydaypic/internal/domain/file/repository/dto"
 	"github.com/bells307/everydaypic/pkg/minio"
 )
 
@@ -20,8 +20,8 @@ func NewMinIOFileRepository(client *minio.MinIOClient) *minIOFileRepository {
 	return &minIOFileRepository{client}
 }
 
-func (s *minIOFileRepository) Upload(ctx context.Context, dto dto.UploadFile) error {
-	return s.client.UploadFile(ctx, dto.Name, dto.Filename, dto.Bucket, dto.FileSize, dto.Data)
+func (s *minIOFileRepository) Upload(ctx context.Context, name, fileName, bucket string, fileSize int64, data io.ReadSeeker) error {
+	return s.client.UploadFile(ctx, name, fileName, bucket, fileSize, data)
 }
 
 func (s *minIOFileRepository) Delete(ctx context.Context, bucket, name string) error {

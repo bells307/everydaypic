@@ -1,11 +1,10 @@
-package mongodb
+package repository
 
 import (
 	"context"
 	"fmt"
 
-	"github.com/bells307/everydaypic/internal/domain/image/model"
-	"github.com/bells307/everydaypic/internal/domain/image/repository/dto"
+	"github.com/bells307/everydaypic/internal/model"
 	mongoClient "github.com/bells307/everydaypic/pkg/mongodb"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -38,10 +37,32 @@ func (r *imageMongoDBRepository) Delete(ctx context.Context, imageID string) err
 }
 
 // Получить изображения по фильтру
-func (r *imageMongoDBRepository) GetByFilter(ctx context.Context, filter dto.GetImagesFilter) ([]model.Image, error) {
-	m, err := getImagesDTOToBsonMap(filter)
-	if err != nil {
-		return []model.Image{}, fmt.Errorf("can't convert filter to bson map: %v", err)
+func (r *imageMongoDBRepository) GetByFilter(ctx context.Context, IDs, fileNames []string) ([]model.Image, error) {
+	m := bson.M{}
+
+	// Формируем фильтр по ID
+	bsonIDs := bson.A{}
+	for i := range IDs {
+		oid, err := primitive.ObjectIDFromHex(IDs[i])
+		if err != nil {
+			return []model.Image{}, fmt.Errorf("can't convert %s to ObjectID: %v", IDs[i], err)
+		} else {
+			bsonIDs = append(bsonIDs, oid)
+		}
+	}
+
+	if len(bsonIDs) > 0 {
+		m["_id"] = bson.M{"$in": bsonIDs}
+	}
+
+	// Формируем фильтр по именам файлов
+	bsonfileNames := bson.A{}
+	for i := range fileNames {
+		bsonfileNames = append(bsonfileNames, fileNames[i])
+	}
+
+	if len(bsonfileNames) > 0 {
+		m["fileName"] = bson.M{"$in": bsonfileNames}
 	}
 
 	cur, err := r.mongoDBClient.Find(ctx, COLLECTION_NAME, m)
@@ -65,36 +86,4 @@ func (r *imageMongoDBRepository) CheckExists(ctx context.Context, imageID string
 	}
 
 	return c > 0, nil
-}
-
-func getImagesDTOToBsonMap(f dto.GetImagesFilter) (m bson.M, err error) {
-	m = bson.M{}
-
-	// Формируем фильтр по ID
-	ids := f.ID
-	oids := bson.A{}
-	for i := range ids {
-		oid, err := primitive.ObjectIDFromHex(ids[i])
-		if err != nil {
-			return m, fmt.Errorf("can't convert %s to ObjectID: %v", ids[i], err)
-		} else {
-			oids = append(oids, oid)
-		}
-	}
-
-	if len(oids) > 0 {
-		m["_id"] = bson.M{"$in": oids}
-	}
-
-	// Формируем фильтр по именам файлов
-	fileNames := bson.A{}
-	for i := range f.FileName {
-		fileNames = append(fileNames, f.FileName[i])
-	}
-
-	if len(fileNames) > 0 {
-		m["fileName"] = bson.M{"$in": fileNames}
-	}
-
-	return m, nil
 }
